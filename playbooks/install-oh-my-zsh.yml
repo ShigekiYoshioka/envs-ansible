@@ -1,0 +1,40 @@
+- name: install oh-my-zsh
+  hosts: all
+  tasks:
+    - name: check .oh-my-zsh directory
+      stat:
+        path: ~/.oh-my-zsh
+      register: dir_check
+    - name: install oh-my-zsh
+      shell: CHSH=no curl -L https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
+      when: not dir_check.stat.exists
+    - name: install shigeki.theme
+      copy:
+        src: '../files/shigeki.theme'
+        dest: ~/.oh-my-zsh/themes/shigeki.zsh-theme
+      when: not dir_check.stat.exists
+    - name: change theme
+      lineinfile:
+        path: .zshrc
+        regexp: '^ZSH_THEME='
+        line: 'ZSH_THEME="shigeki"'
+      when: not dir_check.stat.exists
+    - name: create zshlibs directory
+      file:
+        path: ~/.zshlibs
+        state: directory
+    - name: zshlibs setting
+      lineinfile:
+        path: .zshrc
+        line: "{{ item }}"
+        insertafter: EOF
+      loop:
+        - 'function loadlib() {'
+        - '    lib=${1:?"You have to specify a library file"}'
+        - '    if [ -f "$lib" ];then'
+        - '        . "$lib"'
+        - '    fi'
+        - '}'
+        - 'for file in `find ${HOME}/.zshlibs -maxdepth 1 -type f`; do'
+        - '    loadlib ${file}'
+        - 'done'
