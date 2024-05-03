@@ -12,7 +12,6 @@
       copy:
         src: '../files/shigeki.theme'
         dest: ~/.oh-my-zsh/themes/shigeki.zsh-theme
-      when: not dir_check.stat.exists
     - name: change theme
       lineinfile:
         path: .zshrc
